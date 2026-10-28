@@ -1,0 +1,338 @@
+/*
+ * Sistema de diseño corporativo AssetGuard (rediseño).
+ * Se importa al final en app/layout.tsx: reasigna tokens y aplana los efectos
+ * heredados (vidrio, degradados, brillos) sin tocar cada componente.
+ *
+ * Claro (consola): fondo #F3F5F7, acento teal #0B6B5C.
+ * Oscuro (kiosko, portal y consola en oscuro): fondo #0B0F11, acento menta #6FE3BE.
+ * El rojo queda reservado para estados críticos (--critical).
+ */
+
+:root {
+  color-scheme: dark;
+  --tint: 255 255 255;
+  --ink: 230 236 234;
+
+  --background: #0B0F11;
+  --foreground: #E6ECEA;
+  --surface: #12171A;
+  --line: #222B30;
+  --text-secondary: #8F9F9C;
+
+  --primary: #6FE3BE;
+  --primary-rgb: 111 227 190;
+  --primary-strong: #8CEBCD;
+  --primary-foreground: #0B0F11;
+  --critical: #F0866B;
+  --critical-rgb: 240 134 107;
+  --critical-foreground: #0B0F11;
+  --warning: #E3A15F;
+  --warning-rgb: 227 161 95;
+  --success: #6FE3BE;
+
+  --card: #12171A;
+  --card-foreground: #E6ECEA;
+  --popover: #12171A;
+  --popover-foreground: #E6ECEA;
+  --secondary: #1A2226;
+  --secondary-foreground: #E6ECEA;
+  --muted: #1A2226;
+  --muted-foreground: #8F9F9C;
+  --accent: rgb(111 227 190 / 0.12);
+  --accent-foreground: #6FE3BE;
+  --destructive: #F0866B;
+  --border: #222B30;
+  --input: #2C373D;
+  --ring: rgb(111 227 190 / 0.45);
+
+  --chart-1: #6FE3BE;
+  --chart-2: #E3A15F;
+  --chart-3: #8F9F9C;
+  --chart-4: #F0866B;
+  --chart-5: #5B7C75;
+
+  --radius: 0.5rem;
+
+  --sidebar: #0B0F11;
+  --sidebar-foreground: #E6ECEA;
+  --sidebar-primary: #6FE3BE;
+  --sidebar-primary-foreground: #0B0F11;
+  --sidebar-accent: rgb(111 227 190 / 0.1);
+  --sidebar-accent-foreground: #6FE3BE;
+  --sidebar-border: #222B30;
+  --sidebar-ring: rgb(111 227 190 / 0.45);
+
+  --shell: #0B0F11;
+  --shell-foreground: #E6ECEA;
+  --shell-muted: #8F9F9C;
+  --shell-border: #222B30;
+  --shell-hover: rgb(255 255 255 / 0.05);
+
+  --glass-bg: #12171A;
+  --glass-bg-hover: #161D21;
+  --glass-border: #222B30;
+  --glass-border-accent: rgb(111 227 190 / 0.35);
+  --glass-glow: transparent;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --tint: 15 26 30;
+  --ink: 15 26 30;
+
+  --background: #F3F5F7;
+  --foreground: #0F1A1E;
+  --surface: #FFFFFF;
+  --line: #E2E7EB;
+  --text-secondary: #55656D;
+
+  --primary: #0B6B5C;
+  --primary-rgb: 11 107 92;
+  --primary-strong: #095547;
+  --primary-foreground: #FFFFFF;
+  --critical: #B3382B;
+  --critical-rgb: 179 56 43;
+  --critical-foreground: #FFFFFF;
+  --warning: #9A5B0B;
+  --warning-rgb: 154 91 11;
+  --success: #0B6B5C;
+
+  --card: #FFFFFF;
+  --card-foreground: #0F1A1E;
+  --popover: #FFFFFF;
+  --popover-foreground: #0F1A1E;
+  --secondary: #EAEEF1;
+  --secondary-foreground: #0F1A1E;
+  --muted: #EAEEF1;
+  --muted-foreground: #55656D;
+  --accent: #E1F2EE;
+  --accent-foreground: #0B6B5C;
+  --destructive: #B3382B;
+  --border: #E2E7EB;
+  --input: #C9D2D8;
+  --ring: rgb(11 107 92 / 0.4);
+
+  --chart-1: #0B6B5C;
+  --chart-2: #9A5B0B;
+  --chart-3: #55656D;
+  --chart-4: #B3382B;
+  --chart-5: #7FA89F;
+
+  --sidebar: #0F1A1E;
+  --sidebar-foreground: #E6ECEA;
+  --sidebar-primary: #6FE3BE;
+  --sidebar-primary-foreground: #0B0F11;
+  --sidebar-accent: rgb(111 227 190 / 0.12);
+  --sidebar-accent-foreground: #6FE3BE;
+  --sidebar-border: #222B30;
+
+  --shell: #FFFFFF;
+  --shell-foreground: #0F1A1E;
+  --shell-muted: #55656D;
+  --shell-border: #E2E7EB;
+  --shell-hover: #F3F5F7;
+
+  --glass-bg: #FFFFFF;
+  --glass-bg-hover: #FFFFFF;
+  --glass-border: #E2E7EB;
+  --glass-border-accent: rgb(11 107 92 / 0.35);
+
+  /* Las clases heredadas para fondo oscuro (text-white/60...) usan esta tinta */
+  --color-white: #0F1A1E;
+}
+
+@layer base {
+  html { font-feature-settings: "tnum" 1; }
+  body {
+    background-color: var(--background) !important;
+    background-image: none !important;
+    color: var(--foreground);
+  }
+  h1, h2, h3, .font-display {
+    font-family: var(--font-sans), system-ui, sans-serif;
+    letter-spacing: -0.015em;
+    font-weight: 500;
+  }
+  .font-mono, code, kbd, samp { font-family: var(--font-mono-plex), ui-monospace, monospace; }
+}
+
+/* ── Aplanado: sin vidrio, degradados, brillos ni elevación ─────────── */
+.mesh-bg,
+:root[data-theme="light"] .mesh-bg {
+  background: var(--background) !important;
+  background-image: none !important;
+}
+.mesh-bg::before, .mesh-bg::after { content: none !important; }
+
+:is(.glass-card, .glass-card-accent, .glass-card-gold, .kpi-card, .enterprise-panel,
+    .command-strip, .surface-action, .executive-hero, .enterprise-hero),
+:root[data-theme="light"] :is(.glass-card, .glass-card-accent, .glass-card-gold, .kpi-card,
+    .enterprise-panel, .command-strip, .surface-action, .executive-hero, .enterprise-hero) {
+  background: var(--surface) !important;
+  background-image: none !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+:is(.kpi-card, .enterprise-panel, .command-strip, .glass-card, .executive-hero, .enterprise-hero)::before,
+:is(.kpi-card, .enterprise-panel, .command-strip, .glass-card, .executive-hero, .enterprise-hero)::after {
+  content: none !important;
+}
+:is(.kpi-card, .enterprise-panel, .command-strip, .surface-action, .glass-card):hover,
+:root[data-theme="light"] :is(.kpi-card, .enterprise-panel, .command-strip, .surface-action):hover {
+  background: var(--surface) !important;
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--line)) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+.hover-lift:hover { transform: none !important; box-shadow: none !important; }
+
+.glow-red, .glow-red-hover, .glow-gold, .pulse-ring, .floating-particle {
+  box-shadow: none !important; animation: none !important; filter: none !important;
+}
+:is(.kpi-white-glow, .kpi-brand-glow, .kpi-gold-glow) {
+  text-shadow: none !important;
+  font-family: var(--font-mono-plex), ui-monospace, monospace;
+  letter-spacing: -0.03em;
+}
+.kpi-brand-glow { color: var(--primary) !important; }
+.kpi-gold-glow { color: var(--warning) !important; }
+
+:is(.text-gradient-white, .text-gradient-red, .text-gradient-gold),
+:root[data-theme="light"] .text-gradient-white {
+  background: none !important;
+  -webkit-background-clip: border-box !important;
+  background-clip: border-box !important;
+  -webkit-text-fill-color: currentColor !important;
+  color: var(--foreground);
+}
+.text-gradient-red { color: var(--primary); }
+.text-gradient-gold { color: var(--warning); }
+
+.card-accent-top::before, .brand-divider { background: var(--primary) !important; box-shadow: none !important; }
+
+/* Navegación: barra superior limpia, enlace activo con acento sólido */
+.navbar-glass, .glass-header, .corporate-nav-shell {
+  background: var(--shell) !important;
+  background-image: none !important;
+  border-color: var(--shell-border) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.navbar-glass::before, .navbar-glass::after { content: none !important; }
+.corporate-nav-link-active {
+  background: var(--accent) !important;
+  background-image: none !important;
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent) !important;
+  color: var(--primary) !important;
+  box-shadow: none !important;
+}
+
+/* Insignias y estados: crítico en rojo, advertencia en ámbar, resto en acento */
+.badge-brand, .badge-brand-gold, .status-pill {
+  box-shadow: none !important;
+  background-image: none !important;
+}
+.badge-brand {
+  color: var(--primary) !important;
+  background: var(--accent) !important;
+  border-color: color-mix(in srgb, var(--primary) 30%, transparent) !important;
+}
+.badge-brand-gold {
+  color: var(--warning) !important;
+  background: rgb(var(--warning-rgb) / 0.12) !important;
+  border-color: rgb(var(--warning-rgb) / 0.3) !important;
+}
+.status-badge-success { color: var(--primary) !important; background: var(--accent) !important; border-color: color-mix(in srgb, var(--primary) 30%, transparent) !important; }
+.status-badge-warning { color: var(--warning) !important; background: rgb(var(--warning-rgb) / 0.12) !important; border-color: rgb(var(--warning-rgb) / 0.3) !important; }
+.status-badge-danger  { color: var(--critical) !important; background: rgb(var(--critical-rgb) / 0.12) !important; border-color: rgb(var(--critical-rgb) / 0.35) !important; }
+
+.ops-alert, :root[data-theme="light"] .ops-alert {
+  background: rgb(var(--warning-rgb) / 0.1) !important;
+  background-image: none !important;
+  border-color: rgb(var(--warning-rgb) / 0.4) !important;
+  box-shadow: none !important;
+  color: var(--foreground) !important;
+}
+.ops-alert-danger, :root[data-theme="light"] .ops-alert-danger {
+  background: rgb(var(--critical-rgb) / 0.1) !important;
+  background-image: none !important;
+  border-color: rgb(var(--critical-rgb) / 0.4) !important;
+  color: var(--foreground) !important;
+}
+.ops-alert-title { color: var(--warning) !important; }
+.ops-alert-danger .ops-alert-title { color: var(--critical) !important; }
+.ops-alert-body, .ops-alert-danger .ops-alert-body { color: var(--text-secondary) !important; }
+
+.section-eyebrow {
+  font-family: var(--font-mono-plex), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+/* Respeta la preferencia de menos movimiento */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+
+/* Texto sobre fondos de acento: blanco en claro, casi negro en oscuro */
+:root :is([class~="bg-primary"], [class~="bg-[var(--primary)]"], [data-slot="button"][data-variant="default"]) {
+  --color-white: var(--primary-foreground);
+}
+
+/* Texto sobre fondos críticos (acciones destructivas): blanco en claro, casi negro en oscuro */
+:root :is([class~="bg-critical"], [class~="bg-destructive"], [class~="bg-[var(--critical)]"]) {
+  --color-white: var(--critical-foreground);
+}
+
+/* Paleta roja heredada → color crítico del sistema (el rojo solo marca estados críticos) */
+:root, :root[data-theme="light"] {
+  --color-red-100: var(--critical);
+  --color-red-200: var(--critical);
+  --color-red-300: var(--critical);
+  --color-red-400: var(--critical);
+  --color-red-500: var(--critical);
+  --color-red-600: var(--critical);
+  --color-red-700: var(--critical);
+  --color-red-800: var(--critical);
+  --color-red-900: var(--critical);
+  --color-red-950: var(--critical);
+}
+
+/* Neutros del sistema: reemplazan los grises azulados de Tailwind (gray/slate) */
+:root, :root[data-theme="light"] {
+  --color-gray-50: #F8FAFB;  --color-slate-50: #F8FAFB;
+  --color-gray-100: #F3F5F7; --color-slate-100: #F3F5F7;
+  --color-gray-200: #E2E7EB; --color-slate-200: #E2E7EB;
+  --color-gray-300: #C9D2D8; --color-slate-300: #C9D2D8;
+  --color-gray-400: #8F9F9C; --color-slate-400: #8F9F9C;
+  --color-gray-500: #6B7C84; --color-slate-500: #6B7C84;
+  --color-gray-600: #324047; --color-slate-600: #324047;
+  --color-gray-700: #222B30; --color-slate-700: #222B30;
+  --color-gray-800: #1A2226; --color-slate-800: #1A2226;
+  --color-gray-900: #12171A; --color-slate-900: #12171A;
+  --color-gray-950: #0B0F11; --color-slate-950: #0B0F11;
+}
+
+/* ── Kiosko: superficies del diseño (catálogo de tableta) ────────────── */
+:root {
+  --kiosk-sunken: #0E1317;          /* encabezado, panel lateral y fondo de imagen */
+  --kiosk-control: #3A4A4E;         /* borde de botones secundarios y tallas */
+  --kiosk-selected: color-mix(in srgb, var(--primary) 14%, var(--card));
+  --kiosk-critical-bg: color-mix(in srgb, var(--critical) 12%, var(--card));
+  --kiosk-warning-bg: color-mix(in srgb, var(--warning) 12%, var(--card));
+}
+:root[data-theme="light"] {
+  --kiosk-sunken: #EEF1F3;
+  --kiosk-control: #C9D2D8;
+  --kiosk-selected: color-mix(in srgb, var(--primary) 8%, var(--card));
+  --kiosk-critical-bg: color-mix(in srgb, var(--critical) 7%, var(--card));
+  --kiosk-warning-bg: color-mix(in srgb, var(--warning) 8%, var(--card));
+}

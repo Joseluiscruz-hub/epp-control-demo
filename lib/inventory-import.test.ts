@@ -1,0 +1,115 @@
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
+import { hasBlockingInventoryIssues, parseInventoryTsv } from "./inventory-import";
+
+const HEADERS = [
+  "Planta",
+  "Alma",
+  "Material",
+  "Texto breve de Material",
+  "Talla",
+  "Ubicación",
+  "Umb",
+  "Precio variable",
+  "Stock",
+].join("\t");
+
+function row(values: string[]) {
+  return values.join("\t");
+}
+
+describe("parseInventoryTsv", () => {
+  it("exige columna Planta para evitar mezclas entre plantas", () => {
+    const parsed = parseInventoryTsv([
+      HEADERS.replace("Planta\t", ""),
+      row(["1000", "MAT-1", "GUANTE NITRILO T M", "M", "A1", "PZA", "10", "5"]),
+    ].join("\n"));
+
+    assert.equal(hasBlockingInventoryIssues(parsed), true);
+    assert.equal(parsed.issues.some((issue) => issue.message.includes("Faltan columnas requeridas: Planta")), true);
+  });
+
+  it("rechaza alias de planta desconocidos", () => {
+    const parsed = parseInventoryTsv([
+      HEADERS,
+      row(["Otra planta", "1000", "MAT-1", "GUANTE NITRILO T M", "M", "A1", "PZA", "10", "5"]),
+    ].join("\n"));
+
+    assert.equal(hasBlockingInventoryIssues(parsed), true);
+    assert.match(parsed.issues[0]?.message ?? "", /Planta invalida/);
+  });
+
+  it("mantiene separado el mismo producto cuando pertenece a plantas distintas", () => {
+    const parsed = parseInventoryTsv([
+      HEADERS,
+      row(["NTEOPMN001", "1000", "MAT-1", "GUANTE NITRILO T M", "M", "A1", "PZA", "10", "5"]),
+      row(["SUROPMN001", "1000", "MAT-1", "GUANTE NITRILO T M", "M", "B1", "PZA", "10", "7"]),
+    ].join("\n"));
+
+    assert.equal(hasBlockingInventoryIssues(parsed), false);
+    assert.equal(parsed.summary.itemCount, 2);
+    assert.deepEqual(parsed.summary.byPlant, {
+      "Planta Norte": 1,
+      "Planta Sur": 1,
+    });
+    assert.deepEqual(parsed.items.map((item) => item.plantaId).sort(), ["norte", "sur"]);
+    assert.equal(new Set(parsed.items.map((item) => item.id)).size, 1);
+  });
+
+  it("aplica punto de pedido configurado por material", () => {
+    const parsed = parseInventoryTsv([
+      HEADERS,
+      row(["NTEOPMN001", "1000", "90149605", "GUANTE NITRILO T M", "M", "A1", "PZA", "10", "4"]),
+    ].join("\n"));
+
+    assert.equal(hasBlockingInventoryIssues(parsed), false);
+    assert.equal(parsed.items[0]?.reorderPoint, 5);
+    assert.equal(parsed.items[0]?.minStock, 5);
+    assert.equal(parsed.items[0]?.sizes?.M?.reorderPoint, 5);
+    assert.equal(parsed.items[0]?.sizes?.M?.minStock, 5);
+  });
+
+  it("permite inventario unitario sin columna Talla", () => {
+    const headersWithoutSize = [
+      "Planta",
+      "Alma",
+      "Material",
+      "Texto breve de Material",
+      "Ubicación",
+      "Umb",
+      "Precio variable",
+      "Stock",
+    ].join("\t");
+
+    const parsed = parseInventoryTsv([
+      headersWithoutSize,
+      row(["NTEOPMN001", "1000", "MAT-UNIT", "CASCO BLANCO MSA", "A1", "PZA", "125.5", "3"]),
+    ].join("\n"));
+
+    assert.equal(hasBlockingInventoryIssues(parsed), false);
+    assert.equal(parsed.summary.itemCount, 1);
+    assert.equal(parsed.summary.variantCount, 1);
+    assert.equal(parsed.items[0]?.hasSizes, false);
+    assert.equal(parsed.items[0]?.sizes, undefined);
+    assert.equal(parsed.items[0]?.stock, 3);
+    assert.equal(parsed.items[0]?.material, "MAT-UNIT");
+    assert.equal(parsed.items[0]?.location, "A1");
+    assert.equal(parsed.items[0]?.unit, "PZA");
+    assert.equal(parsed.items[0]?.unitCost, 125.5);
+  });
+
+  it("mantiene materiales sin talla como stock directo aunque haya varias filas", () => {
+    const parsed = parseInventoryTsv([
+      HEADERS,
+      row(["NTEOPMN001", "1000", "MAT-UNIT", "CASCO BLANCO MSA", "", "A1", "PZA", "125.5", "2"]),
+      row(["NTEOPMN001", "1000", "MAT-UNIT", "CASCO BLANCO MSA", "N/A", "A2", "PZA", "125.5", "3"]),
+    ].join("\n"));
+
+    assert.equal(hasBlockingInventoryIssues(parsed), false);
+    assert.equal(parsed.summary.itemCount, 1);
+    assert.equal(parsed.summary.variantCount, 2);
+    assert.equal(parsed.items[0]?.hasSizes, false);
+    assert.equal(parsed.items[0]?.sizes, undefined);
+    assert.equal(parsed.items[0]?.stock, 5);
+  });
+});

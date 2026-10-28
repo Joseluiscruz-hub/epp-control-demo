@@ -1,0 +1,81 @@
+"use client";
+
+import { Loader2 } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import type { SummaryRow } from "../_hooks/useReportData";
+
+export interface SummaryTableProps {
+  summaryRows: SummaryRow[];
+  loading: boolean;
+}
+
+export function SummaryTable({ summaryRows, loading }: SummaryTableProps) {
+  return (
+    <div className="enterprise-panel overflow-hidden">
+      <div className="flex items-center justify-between gap-4 border-b border-white/10 p-5">
+        <div>
+          <p className="section-eyebrow">Consolidado</p>
+          <h2 className="text-lg font-black text-white">Material por área</h2>
+        </div>
+        <Badge className="rounded-md border border-white/10 bg-white/5 text-white/60">
+          {summaryRows.length} líneas
+        </Badge>
+      </div>
+
+      {loading ? (
+        <div className="flex h-64 items-center justify-center">
+          <Loader2 className="h-7 w-7 animate-spin text-red-400" />
+        </div>
+      ) : summaryRows.length === 0 ? (
+        <div className="empty-state h-64">
+          <p className="empty-state-title">Sin consumos en este corte</p>
+          <p className="empty-state-body">
+            No hay movimientos para el periodo seleccionado. Las exportaciones SAP/CSV permanecen deshabilitadas hasta que existan datos reales — no se generan filas de ejemplo.
+          </p>
+        </div>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow className="border-white/10 hover:bg-transparent">
+              <TableHead className="px-5 text-[10px] font-black uppercase tracking-widest text-white/55">Material</TableHead>
+              <TableHead className="text-[10px] font-black uppercase tracking-widest text-white/55">Área</TableHead>
+              <TableHead className="text-[10px] font-black uppercase tracking-widest text-white/55">Talla</TableHead>
+              <TableHead className="text-right text-[10px] font-black uppercase tracking-widest text-white/55">Cantidad</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {summaryRows.map((row) => (
+              <TableRow key={row.key} className="border-white/10 hover:bg-white/[0.03]">
+                <TableCell className="px-5 py-4">
+                  <div className="max-w-[380px]">
+                    <p className="font-bold text-white">{row.itemName}</p>
+                    <p className="mt-1 font-mono text-xs text-white/55">{row.material}</p>
+                  </div>
+                </TableCell>
+                <TableCell className="py-4">
+                  <p className="font-semibold text-white/75">{row.area}</p>
+                  {row.costCenter && <p className="mt-1 text-xs text-white/50">CECO {row.costCenter}</p>}
+                </TableCell>
+                <TableCell className="py-4 text-white/60">{row.size}</TableCell>
+                <TableCell className="py-4 text-right">
+                  <span className="inline-flex min-w-12 justify-center rounded-lg border border-primary/20 bg-primary/10 px-3 py-1 font-black text-primary">
+                    {row.quantity} {row.quantityUnit}
+                  </span>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+    </div>
+  );
+}

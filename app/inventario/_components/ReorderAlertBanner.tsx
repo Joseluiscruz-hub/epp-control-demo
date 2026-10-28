@@ -1,0 +1,69 @@
+"use client";
+
+import { AlertTriangle, Download, FileText } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import type { ReorderAlert } from "../_hooks/useInventoryData";
+
+interface ReorderAlertBannerProps {
+  alerts: ReorderAlert[];
+  onReview: () => void;
+  onDownload: () => void;
+}
+
+export function ReorderAlertBanner({ alerts, onReview, onDownload }: ReorderAlertBannerProps) {
+  if (alerts.length === 0) return null;
+
+  const preview = alerts.slice(0, 6);
+
+  return (
+    <div className="rounded-xl border border-[var(--warning)]/25 bg-[var(--warning)]/10 p-5">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex gap-4">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[var(--warning)]/25 bg-[var(--warning)]/10 text-[var(--warning)]">
+            <AlertTriangle className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--warning)]">
+              SOLPED requerida
+            </p>
+            <p className="mt-1 text-sm font-semibold text-white/75">
+              {alerts.length} material{alerts.length === 1 ? "" : "es"} alcanzaron su punto de pedido. Crear SOLPED para reabastecimiento.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {preview.map((alert) => (
+                <span
+                  key={`${alert.itemDocId}-${alert.material}-${alert.size ?? "na"}`}
+                  className="rounded-md border border-white/10 bg-black/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white/70"
+                >
+                  {alert.material}{alert.size ? ` T${alert.size}` : ""}: {alert.stock}/{alert.reorderPoint} PZA
+                </span>
+              ))}
+              {alerts.length > preview.length && (
+                <span className="rounded-md bg-black/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white/45">
+                  +{alerts.length - preview.length} más
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+          <Button
+            onClick={onReview}
+            className="h-11 rounded-xl bg-[var(--warning)] px-5 text-[10px] font-black uppercase tracking-widest text-black hover:bg-[var(--warning)]"
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            Ver SOLPED
+          </Button>
+          <Button
+            onClick={onDownload}
+            variant="outline"
+            className="h-11 rounded-xl border-[var(--warning)]/30 bg-black/20 px-5 text-[10px] font-black uppercase tracking-widest text-[var(--warning)] hover:bg-[var(--warning)]/10 hover:text-[var(--warning)]"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Descargar
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}

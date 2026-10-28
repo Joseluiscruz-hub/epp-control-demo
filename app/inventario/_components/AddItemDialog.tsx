@@ -1,0 +1,322 @@
+"use client";
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
+} from '@/components/ui/dialog';
+import {
+  AlertTriangle, CheckCircle2, Loader2, PackagePlus, Search
+} from 'lucide-react';
+import type { ManualCatalogLookupState } from '../_hooks/useInventoryData';
+
+export interface AddItemDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  saving: boolean;
+  catalogLookup: ManualCatalogLookupState;
+  form: {
+    sku: string;
+    material: string;
+    name: string;
+    category: string;
+    replacementDays: string;
+    stock: string;
+    minStock: string;
+    location: string;
+    unit: string;
+    unitCost: string;
+    stockUnit: string;
+    packageUnit: string;
+    unitsPerPackage: string;
+  };
+  setForm: (form: AddItemDialogProps['form']) => void;
+  onSubmit: (e: React.FormEvent) => void;
+}
+
+export function AddItemDialog({
+  open,
+  onOpenChange,
+  saving,
+  catalogLookup,
+  form,
+  setForm,
+  onSubmit,
+}: AddItemDialogProps) {
+  const lookupReady = catalogLookup.status === 'found';
+  const lookupProblem =
+    catalogLookup.status === 'error' ||
+    catalogLookup.status === 'duplicate';
+  const isPackagedStock = form.stockUnit === 'CAJA' || form.stockUnit === 'BOLSA';
+  const unitsPerPackage = Number(form.unitsPerPackage);
+  const decreasePerIssue = isPackagedStock && Number.isFinite(unitsPerPackage) && unitsPerPackage > 0
+    ? (1 / unitsPerPackage).toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+    : null;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[640px] rounded-[2rem] border border-white/10 p-0 overflow-hidden bg-card">
+        <div className="bg-white/5 p-8 relative border-b border-white/10">
+          <div className="absolute top-0 right-0 p-8 opacity-10">
+            <PackagePlus className="h-20 w-20 text-white" />
+          </div>
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black tracking-tight uppercase text-white">
+              Alta de Material
+            </DialogTitle>
+            <p className="text-white/50 font-medium mt-1">
+              El SKU controla el nombre, categoría y vigencia del artículo.
+            </p>
+          </DialogHeader>
+        </div>
+
+        <form onSubmit={onSubmit} className="p-8 space-y-6">
+          <div className="space-y-2">
+            <Label className="text-[10px] font-bold uppercase tracking-widest text-white/50">
+              Código SKU obligatorio
+            </Label>
+            <div className="relative">
+              <Input
+                autoFocus
+                required
+                maxLength={32}
+                autoComplete="off"
+                className="h-12 rounded-xl bg-white/5 border-white/10 pr-12 text-white font-bold focus-visible:ring-[var(--primary)]"
+                value={form.sku}
+                onChange={(event) => setForm({
+                  ...form,
+                  sku: event.target.value.toUpperCase(),
+                })}
+                placeholder="Ej: 90149605 o 2KPM0"
+                aria-describedby="manual-sku-status"
+              />
+              <div className="absolute inset-y-0 right-4 flex items-center">
+                {catalogLookup.status === 'loading' ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-white/50" />
+                ) : lookupReady ? (
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                ) : lookupProblem ? (
+                  <AlertTriangle className="h-4 w-4 text-[var(--warning)]" />
+                ) : (
+                  <Search className="h-4 w-4 text-white/30" />
+                )}
+              </div>
+            </div>
+            <p
+              id="manual-sku-status"
+              className={
+                lookupReady
+                  ? 'text-xs font-medium text-primary'
+                  : lookupProblem
+                    ? 'text-xs font-medium text-[var(--warning)]'
+                    : 'text-xs font-medium text-white/40'
+              }
+            >
+              {catalogLookup.message}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-white/50">
+                Material SAP
+              </Label>
+              <Input
+                readOnly
+                tabIndex={-1}
+                className="h-12 rounded-xl border-white/10 bg-white/[0.03] text-white/70 font-bold"
+                value={form.material}
+                placeholder="Se obtiene del catálogo"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-white/50">
+                Categoría
+              </Label>
+              <Input
+                readOnly
+                tabIndex={-1}
+                className="h-12 rounded-xl border-white/10 bg-white/[0.03] text-white/70 font-bold"
+                value={form.category}
+                placeholder="Automática"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-[10px] font-bold uppercase tracking-widest text-white/50">
+              Nombre oficial del catálogo
+            </Label>
+            <Input
+              readOnly
+              tabIndex={-1}
+              className="h-12 rounded-xl border-white/10 bg-white/[0.03] text-white/70 font-bold"
+              value={form.name}
+              placeholder="Se completará al validar el SKU"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-white/50">
+                Vigencia (días)
+              </Label>
+              <Input
+                readOnly
+                tabIndex={-1}
+                className="h-12 rounded-xl border-white/10 bg-white/[0.03] text-white/70 font-bold"
+                value={form.replacementDays}
+                placeholder="Automática"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-white/50">
+                Unidad
+              </Label>
+              <Input
+                readOnly
+                tabIndex={-1}
+                className="h-12 rounded-xl border-white/10 bg-white/[0.03] text-white/70 font-bold"
+                value={form.unit}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-white/50">
+                Stock inicial
+              </Label>
+              <Input
+                required
+                type="number"
+                min="0"
+                max="1000000"
+                step="1"
+                inputMode="numeric"
+                className="h-12 rounded-xl bg-white/5 border-white/10 text-white font-bold focus-visible:ring-[var(--primary)]"
+                value={form.stock}
+                onChange={(event) => setForm({ ...form, stock: event.target.value })}
+                placeholder="Cajas o piezas según la regla"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-white/50">
+                Stock mínimo
+              </Label>
+              <Input
+                type="number"
+                min="0"
+                max="1000000"
+                step="1"
+                inputMode="numeric"
+                className="h-12 rounded-xl bg-white/5 border-white/10 text-white font-bold focus-visible:ring-[var(--primary)]"
+                value={form.minStock}
+                onChange={(event) => setForm({ ...form, minStock: event.target.value })}
+                placeholder="Sugerido por catálogo"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-white/50">Entrada de Stock</Label>
+              <select
+                value={form.stockUnit}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setForm({
+                    ...form,
+                    stockUnit: value || 'PZA',
+                    packageUnit: value === 'CAJA' || value === 'BOLSA' ? value : 'CAJA',
+                    unitsPerPackage: value === 'CAJA' || value === 'BOLSA' ? (form.unitsPerPackage || '5') : '',
+                    unit: value === 'CAJA' || value === 'BOLSA' ? value : 'PZA',
+                  });
+                }}
+                className="h-12 w-full rounded-xl border border-white/10 bg-white/5 px-3 text-white font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+              >
+                <option className="bg-muted" value="PZA">Pieza</option>
+                <option className="bg-muted" value="CAJA">Caja</option>
+                <option className="bg-muted" value="BOLSA">Bolsa</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-white/50">Piezas por {form.stockUnit === 'BOLSA' ? 'Bolsa' : 'Caja'}</Label>
+              <Input
+                type="number"
+                min="1"
+                step="1"
+                disabled={!isPackagedStock}
+                className="h-12 rounded-xl bg-white/5 border-white/10 text-white font-bold focus-visible:ring-[var(--primary)] disabled:opacity-40"
+                value={form.unitsPerPackage}
+                onChange={(event) => setForm({ ...form, unitsPerPackage: event.target.value })}
+                placeholder={isPackagedStock ? "Ej: 5" : "No aplica"}
+              />
+              {decreasePerIssue && (
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
+                  Cada entrega descuenta {decreasePerIssue} {form.stockUnit}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-white/50">
+                Ubicación obligatoria
+              </Label>
+              <Input
+                required
+                maxLength={40}
+                className="h-12 rounded-xl bg-white/5 border-white/10 text-white font-bold focus-visible:ring-[var(--primary)]"
+                value={form.location}
+                onChange={(event) => setForm({
+                  ...form,
+                  location: event.target.value.toUpperCase(),
+                })}
+                placeholder="Ej: A1-RACK-03"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-white/50">
+                Precio variable
+              </Label>
+              <Input
+                type="number"
+                min="0"
+                max="100000000"
+                step="0.01"
+                inputMode="decimal"
+                className="h-12 rounded-xl bg-white/5 border-white/10 text-white font-bold focus-visible:ring-[var(--primary)]"
+                value={form.unitCost}
+                onChange={(event) => setForm({ ...form, unitCost: event.target.value })}
+                placeholder="0.00"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="pt-4">
+            <Button
+              type="submit"
+              disabled={
+                saving ||
+                !lookupReady ||
+                form.stock === '' ||
+                form.location.trim() === '' ||
+                (isPackagedStock && form.unitsPerPackage === '')
+              }
+              className="w-full h-14 rounded-xl bg-[var(--primary)] hover:bg-primary text-white font-bold uppercase tracking-widest transition-all disabled:bg-white/10 disabled:text-white/30"
+            >
+              {saving ? (
+                <Loader2 className="h-6 w-6 animate-spin" />
+              ) : (
+                'Confirmar registro validado'
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}

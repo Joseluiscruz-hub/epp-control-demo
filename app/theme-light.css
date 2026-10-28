@@ -1,0 +1,245 @@
+/*
+ * Tema claro de AssetGuard EPP.
+ *
+ * El modo oscuro sigue siendo el predeterminado y no cambia. Este archivo solo
+ * aplica cuando next-themes escribe data-theme="light" en <html> (selector del
+ * encabezado). Kiosko y portal siempre se fuerzan a oscuro (components/theme-provider.tsx).
+ *
+ * Gran parte de las pantallas usan clases pensadas para fondo oscuro
+ * (text-white/60, bg-white/5, border-white/10, text-red-300...). En vez de reescribir
+ * cientos de clases, en modo claro se reasigna la variable --color-white de Tailwind a
+ * una tinta azul marino y los tonos claros de la paleta (100-400) a tonos oscuros,
+ * para que esas mismas clases sigan teniendo contraste. Los fondos sólidos de marca
+ * (rojo, verde) y los bloques marcados con .theme-keep restauran el blanco real.
+ */
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --tint: 15 23 42;
+  --ink: 15 23 42;
+
+  --background: #f4f6fa;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #f40009;
+  --primary-foreground: #ffffff;
+  --secondary: rgb(15 23 42 / 0.05);
+  --secondary-foreground: #0f172a;
+  --muted: rgb(15 23 42 / 0.05);
+  --muted-foreground: rgb(15 23 42 / 0.62);
+  --accent: rgba(244, 0, 9, 0.08);
+  --accent-foreground: #c10007;
+  --destructive: #d10008;
+  --border: rgb(15 23 42 / 0.12);
+  --input: rgb(15 23 42 / 0.14);
+  --ring: rgba(244, 0, 9, 0.35);
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0f172a;
+  --sidebar-border: rgb(15 23 42 / 0.08);
+
+  --shell: rgba(255, 255, 255, 0.86);
+  --shell-foreground: #0f172a;
+  --shell-muted: rgb(15 23 42 / 0.58);
+  --shell-border: rgb(15 23 42 / 0.09);
+  --shell-hover: rgb(15 23 42 / 0.05);
+
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-bg-hover: rgba(255, 255, 255, 0.9);
+  --glass-border: rgb(15 23 42 / 0.1);
+
+  /* Clases heredadas del modo oscuro: "blanco" pasa a ser la tinta */
+  --color-white: #0f172a;
+
+  /* Tonos claros de la paleta → tonos legibles sobre fondo claro */
+  --color-red-100: oklch(50.5% 0.213 27.518);
+  --color-red-200: oklch(50.5% 0.213 27.518);
+  --color-red-300: oklch(50.5% 0.213 27.518);
+  --color-red-400: oklch(57.7% 0.245 27.325);
+  --color-amber-100: oklch(47.3% 0.137 46.201);
+  --color-amber-200: oklch(47.3% 0.137 46.201);
+  --color-amber-300: oklch(55.5% 0.163 48.998);
+  --color-amber-400: oklch(66.6% 0.179 58.318);
+  --color-yellow-200: oklch(47.6% 0.114 61.907);
+  --color-yellow-300: oklch(55.4% 0.135 66.442);
+  --color-yellow-400: oklch(68.1% 0.162 75.834);
+  --color-orange-200: oklch(55.3% 0.195 38.402);
+  --color-orange-300: oklch(55.3% 0.195 38.402);
+  --color-orange-400: oklch(64.6% 0.222 41.116);
+  --color-emerald-100: oklch(50.8% 0.118 165.612);
+  --color-emerald-200: oklch(50.8% 0.118 165.612);
+  --color-emerald-300: oklch(50.8% 0.118 165.612);
+  --color-emerald-400: oklch(59.6% 0.145 163.225);
+  --color-green-300: oklch(52.7% 0.154 150.069);
+  --color-green-400: oklch(62.7% 0.194 149.214);
+  --color-sky-200: oklch(50% 0.134 242.749);
+  --color-sky-300: oklch(50% 0.134 242.749);
+  --color-sky-400: oklch(58.8% 0.158 241.966);
+  --color-blue-200: oklch(48.8% 0.243 264.376);
+  --color-blue-300: oklch(48.8% 0.243 264.376);
+  --color-blue-400: oklch(54.6% 0.245 262.881);
+  --color-violet-200: oklch(49.1% 0.27 292.581);
+  --color-violet-300: oklch(49.1% 0.27 292.581);
+  --color-violet-400: oklch(54.1% 0.281 293.009);
+}
+
+/* Fondos sólidos de marca y bloques que deben conservar texto blanco */
+:root[data-theme="light"] :is(
+  [class~="bg-[#F40009]"],
+  [class~="bg-[#da0008]"],
+  [class~="bg-[#0d1117]"],
+  [class~="bg-primary"],
+  [class~="bg-brand-red"],
+  [class~="bg-red-500"],
+  [class~="bg-red-600"],
+  [class~="bg-red-700"],
+  [class~="bg-emerald-500"],
+  [class~="bg-emerald-600"],
+  [class~="bg-emerald-700"],
+  [data-slot="button"][data-variant="default"],
+  [data-slot="button"][data-variant="destructive"],
+  .theme-keep
+) {
+  --color-white: #ffffff;
+}
+
+/* Superficies oscuras fijas (diálogos, menús, pantallas de acceso) → superficies claras */
+:root[data-theme="light"] :is(
+  [class~="bg-[#040813]"],
+  [class~="bg-[#07090d]"],
+  [class~="bg-[#0b0d12]"],
+  [class~="bg-[#10151d]"],
+  [class~="bg-[#0A1628]"],
+  [class~="bg-[#111827]"],
+  [class~="bg-slate-950"]
+):not(.theme-keep) {
+  background-color: #ffffff;
+}
+
+:root[data-theme="light"] :is(
+  [class~="bg-[#07090d]"],
+  [class~="bg-slate-950"]
+)[class~="min-h-screen"] {
+  background-color: var(--background);
+}
+
+/* Fondo general */
+:root[data-theme="light"] body,
+:root[data-theme="light"] .mesh-bg {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(circle at 10% -18%, rgba(244, 0, 9, 0.08) 0%, transparent 36%),
+    radial-gradient(circle at 92% -22%, rgba(212, 160, 23, 0.08) 0%, transparent 40%),
+    linear-gradient(180deg, #f8fafc 0%, #f1f4f9 50%, #eef2f7 100%);
+}
+
+:root[data-theme="light"] .mesh-bg::after {
+  opacity: 0.18;
+}
+
+/* Tarjetas y paneles: blanco con sombra suave en lugar de vidrio oscuro */
+:root[data-theme="light"] :is(.glass-card, .enterprise-panel, .kpi-card, .command-strip, .surface-action) {
+  background: rgba(255, 255, 255, 0.82);
+  border-color: rgb(15 23 42 / 0.09);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 10px 30px rgb(15 23 42 / 0.06);
+}
+
+:root[data-theme="light"] :is(.enterprise-panel, .kpi-card):hover {
+  background: #ffffff;
+  border-color: rgba(244, 0, 9, 0.22);
+  box-shadow: 0 2px 4px rgb(15 23 42 / 0.05), 0 18px 44px rgb(15 23 42 / 0.09);
+}
+
+:root[data-theme="light"] .kpi-card::before {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.6), transparent 52%);
+}
+
+:root[data-theme="light"] .glass-card-accent {
+  background: linear-gradient(180deg, rgba(244, 0, 9, 0.06), rgba(255, 255, 255, 0.9));
+  box-shadow: 0 10px 30px rgb(15 23 42 / 0.06);
+}
+
+:root[data-theme="light"] .glass-card-gold {
+  background: linear-gradient(180deg, rgba(212, 160, 23, 0.08), rgba(255, 255, 255, 0.9));
+  box-shadow: 0 10px 30px rgb(15 23 42 / 0.06);
+}
+
+:root[data-theme="light"] :is(.executive-hero, .enterprise-hero) {
+  background:
+    linear-gradient(120deg, rgba(244, 0, 9, 0.07) 0%, rgba(255, 255, 255, 0.92) 40%, rgba(212, 160, 23, 0.07) 100%),
+    #ffffff;
+  border-color: rgb(15 23 42 / 0.09);
+  box-shadow: 0 2px 4px rgb(15 23 42 / 0.04), 0 18px 50px rgb(15 23 42 / 0.08);
+}
+
+:root[data-theme="light"] .text-gradient-white {
+  background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+:root[data-theme="light"] :is(.kpi-white-glow, .kpi-brand-glow, .kpi-gold-glow) {
+  text-shadow: none;
+}
+
+:root[data-theme="light"] .kpi-gold-glow {
+  color: #a87c0c;
+}
+
+:root[data-theme="light"] .badge-brand {
+  color: #b00007;
+}
+
+:root[data-theme="light"] .badge-brand-gold {
+  color: #8a6508;
+}
+
+:root[data-theme="light"] .ops-alert {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(255, 255, 255, 0.95));
+  color: #78350f;
+  box-shadow: 0 8px 24px rgb(15 23 42 / 0.06);
+}
+
+:root[data-theme="light"] .ops-alert-title {
+  color: #92400e;
+}
+
+:root[data-theme="light"] .ops-alert-body {
+  color: #78350f;
+}
+
+:root[data-theme="light"] .ops-alert-danger {
+  background: linear-gradient(135deg, rgba(244, 0, 9, 0.08), rgba(255, 255, 255, 0.95));
+  color: #7f1d1d;
+}
+
+:root[data-theme="light"] .ops-alert-danger :is(.ops-alert-title, .ops-alert-body) {
+  color: #991b1b;
+}
+
+:root[data-theme="light"] .status-badge-success {
+  color: #047857;
+}
+
+:root[data-theme="light"] .status-badge-warning {
+  color: #92400e;
+}
+
+:root[data-theme="light"] .status-badge-danger {
+  color: #b91c1c;
+}
+
+:root[data-theme="light"] [data-slot="button"]:not(:disabled):hover {
+  box-shadow: 0 8px 20px rgb(15 23 42 / 0.1);
+}
+
+:root[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgb(15 23 42 / 0.16);
+}
+
+/* El panel de ARIA ya es claro por diseño: conserva sus colores originales */
+:root[data-theme="light"] .theme-keep {
+  --tint: 255 255 255;
+}

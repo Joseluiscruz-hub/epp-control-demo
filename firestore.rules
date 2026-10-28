@@ -1,0 +1,176 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Empleados ──────────────────────────────────────────────────────────
+    match /employees/{employeeId} {
+      allow read: if request.auth != null && isAdmin() && hasPlantAccess(resource.data);
+      // Escrituras solo via API (Admin SDK), que valida planta y esquema.
+      allow create, update, delete: if false;
+    }
+
+    // ── Snapshot público mínimo para kiosko ────────────────────────────────
+    match /kiosk_employees/{employeeId} {
+      allow get: if request.auth != null && isAdmin() && hasPlantAccess(resource.data);
+      allow list: if request.auth != null && isAdmin() && hasPlantAccess(resource.data);
+      allow create, update, delete: if false;
+    }
+
+    // ── Secretos sensibles de kiosko (solo servidor Admin SDK) ─────────────
+    match /kiosk_employee_secrets/{employeeId} {
+      allow read, write: if false;
+    }
+
+    match /employee_activations/{activationId} {
+      allow read, write: if false;
+    }
+
+    // ── Catálogo EPP ───────────────────────────────────────────────────────
+    match /ppe_catalog/{itemId} {
+      allow read: if request.auth != null && hasPlantAccess(resource.data);
+      allow create, update, delete: if false;
+    }
+
+    // ── Proyección de catálogo (solo servidor; el kiosko usa /api/kiosk/catalog) ──
+    match /kiosk_catalog/{itemId} {
+      allow read, write: if false;
+    }
+
+    // ── Solicitudes Kiosko ─────────────────────────────────────────────────
+    match /kiosk_requests/{requestId} {
+      allow get: if request.auth != null && isAdmin() && hasPlantAccess(resource.data);
+      allow list: if request.auth != null && isAdmin() && hasPlantAccess(resource.data);
+      allow create, update, delete: if false;
+    }
+
+    // ── Estado público mínimo de solicitud para kiosko ─────────────────────
+    match /kiosk_request_status/{requestId} {
+      allow get: if false;
+      allow list: if false;
+      allow create, update, delete: if false;
+    }
+
+    // ── Alertas administrativas generadas por servidor ────────────────────
+    match /kiosk_alerts/{alertId} {
+      allow read: if request.auth != null && isAdmin() && hasPlantAccess(resource.data);
+      allow create, update, delete: if false;
+    }
+
+    // ── Bitácora de movimientos de inventario ─────────────────────────────
+    match /inventory_movements/{movementId} {
+      allow read: if request.auth != null && isAdmin() && hasPlantAccess(resource.data);
+      allow create, update, delete: if false;
+    }
+
+    // ── Asignaciones ───────────────────────────────────────────────────────
+    match /assignments/{assignmentId} {
+      allow read: if request.auth != null && isAdmin() && hasPlantAccess(resource.data);
+      allow create, update, delete: if false;
+    }
+
+    // ── Metas y acumulados presupuestales ─────────────────────────────────
+    match /budget_goals/{goalId} {
+      allow read: if request.auth != null && isAdmin() && hasPlantAccess(resource.data);
+      allow create, update, delete: if false;
+    }
+
+    match /budget_spending/{counterId} {
+      allow read: if request.auth != null && isAdmin() && hasPlantAccess(resource.data);
+      allow write: if false;
+    }
+
+    // ── Cobros por Extravío ─────────────────────────────────────────────────
+    match /loss_charges/{chargeId} {
+      allow read: if request.auth != null && isAdmin() && hasPlantAccess(resource.data);
+      allow create, update, delete: if false;
+    }
+
+    // ── Sesiones Kiosko ─────────────────────────────────────────────────────
+    match /kiosk_sessions/{sessionId} {
+      allow read, write: if false;
+    }
+
+    // ── Perfiles administrativos multi-planta ─────────────────────────────
+    match /users/{userId} {
+      allow get: if request.auth != null && (request.auth.uid == userId || isBootstrapAdmin());
+      allow list: if request.auth != null && isGlobalAdmin();
+      allow create, update, delete: if false;
+    }
+
+    // ── Auditoria de rescate administrativo ───────────────────────────────
+    match /admin_rescue_events/{eventId} {
+      allow read: if request.auth != null && isGlobalAdmin();
+      allow create, update, delete: if false;
+    }
+
+    // ── Auditoría central generada por servidor ───────────────────────────
+    match /audit_events/{eventId} {
+      allow read: if request.auth != null && isGlobalAdmin();
+      allow create, update, delete: if false;
+    }
+
+    // ── Controles internos de rate limit (solo servidor Admin SDK) ──────────
+    match /kiosk_pin_rate_limits/{limitId} {
+      allow read, write: if false;
+    }
+
+    match /public_api_rate_limits/{limitId} {
+      allow read, write: if false;
+    }
+
+    // ── Llaves de idempotencia de entregas y ajustes de stock (solo servidor) ──
+    match /idempotency_keys/{keyId} {
+      allow read, write: if false;
+    }
+
+    // ── Indice de solicitudes pendientes de kiosko (idempotencia, solo servidor) ──
+    match /kiosk_pending_index/{indexId} {
+      allow read, write: if false;
+    }
+
+    // ── Funciones helper ───────────────────────────────────────────────────
+
+    function isBootstrapAdmin() {
+      return request.auth != null && request.auth.token.bootstrapAdmin == true;
+    }
+
+    function userProfilePath() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
+    }
+
+    function hasUserProfile() {
+      return request.auth != null && exists(userProfilePath());
+    }
+
+    function getUserData() {
+      return get(userProfilePath()).data;
+    }
+
+    function isGlobalAdmin() {
+      return isBootstrapAdmin()
+        || (hasUserProfile()
+          && getUserData().active != false
+          && getUserData().role == "admin_global");
+    }
+
+    function isLocalAdmin() {
+      return hasUserProfile()
+        && getUserData().active != false
+        && getUserData().role == "admin_local"
+        && getUserData().plantaId in ["norte", "sur"];
+    }
+
+    function isAdmin() {
+      return isGlobalAdmin() || isLocalAdmin();
+    }
+
+    function activeAdminPlant() {
+      return isLocalAdmin() ? getUserData().plantaId : "nacional";
+    }
+
+    function hasPlantAccess(data) {
+      return isGlobalAdmin()
+        || (isLocalAdmin() && (data.plantaId == null || data.plantaId == activeAdminPlant()));
+    }
+  }
+}
