@@ -367,7 +367,7 @@ export function parseInventoryTsv(text: string): ParsedInventoryImport {
       size,
       sku,
       material,
-      codes: [durationRule?.supplierSku, durationRule?.sapMaterial],
+      codes: [durationRule?.erpSku, durationRule?.sapMaterial],
       stockInput: stockInput ?? 0,
     });
     const reorderPoint = getEppReorderPoint(material, sku);
@@ -422,7 +422,7 @@ export function parseInventoryTsv(text: string): ParsedInventoryImport {
         sku: primary.sku,
         material: primary.material,
         name: group.baseName,
-        codes: [group.durationRule?.supplierSku, group.durationRule?.sapMaterial],
+        codes: [group.durationRule?.erpSku, group.durationRule?.sapMaterial],
         sizes: Object.fromEntries(variants.map((variant) => [
           variant.size,
           { sku: variant.sku, material: variant.material },

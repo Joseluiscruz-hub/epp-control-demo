@@ -296,4 +296,16 @@ describe("Firestore deny-by-default", () => {
     await assertFails(setDoc(doc(globalDb, "kiosk_pending_index", indexId), { requestId: "fake" }));
     await assertFails(getDocs(collection(globalDb, "kiosk_pending_index")));
   });
+  it("niega escrituras de cliente en ARIA y reglas de negocio", async () => {
+    const anonDb = testEnv.unauthenticatedContext().firestore();
+    const globalDb = testEnv.authenticatedContext(globalAdminProfile.uid).firestore();
+
+    await assertFails(setDoc(doc(globalDb, "aria_queries", "q1"), { acceptedByUser: true }));
+    await assertFails(getDoc(doc(anonDb, "aria_queries", "q1")));
+    await assertFails(getDoc(doc(globalDb, "aria_rate_limits", "user_x")));
+    await assertFails(setDoc(doc(globalDb, "aria_rate_limits", "user_x"), { requestCount: 0 }));
+    await assertFails(setDoc(doc(globalDb, "business_rules", "current"), { version: "hack" }));
+    await assertFails(setDoc(doc(globalDb, "business_rules_versions", "v999"), { durationRules: [] }));
+    await assertFails(getDoc(doc(anonDb, "business_rules", "current")));
+  });
 });

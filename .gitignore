@@ -9,3 +9,8 @@ coverage/
 .env*
 !.env.example
 epp-kiosko-*.zip
+
+# Generados localmente
+firestore-debug.log
+firebase-debug.log
+reports/

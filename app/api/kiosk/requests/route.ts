@@ -4,6 +4,7 @@ import { NextRequest } from "next/server";
 import { AppCheckHttpError, requireAppCheck } from "@/lib/app-check";
 import { buildAuditEvent } from "@/lib/audit-events";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { loadBusinessRules } from "@/lib/business-rules-server";
 import { buildPublicKioskCatalogPayload } from "@/lib/kiosk-catalog-public";
 import { AuthHttpError, canAdminUsePlant, requireAdminUser, type AdminSession } from "@/lib/server-auth";
 import {
@@ -942,6 +943,7 @@ export async function POST(req: NextRequest) {
   try {
     await requireAppCheck(req);
     assertSameOrigin(req);
+    await loadBusinessRules(getAdminDb());
     const db = getAdminDb();
     const session = await requireKioskSession(req, db);
     const body = await req.json();
@@ -1180,6 +1182,7 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
+    await loadBusinessRules(getAdminDb());
     const adminUser = await requireAdminUser(req);
     const body = await req.json();
     const requestId = readText(body?.requestId);

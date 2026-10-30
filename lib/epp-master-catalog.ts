@@ -220,8 +220,8 @@ function buildFromDurationRule(
   requestedSku: string
 ): CanonicalEppCatalogItem {
   const material = normalizeManualSku(rule.sapMaterial) || requestedSku;
-  const canonicalSku = material || normalizeManualSku(rule.supplierSku) || requestedSku;
-  const reorderPoint = getEppReorderPoint(material, rule.supplierSku, requestedSku);
+  const canonicalSku = material || normalizeManualSku(rule.erpSku) || requestedSku;
+  const reorderPoint = getEppReorderPoint(material, rule.erpSku, requestedSku);
   return {
     sku: canonicalSku,
     material,
@@ -231,7 +231,7 @@ function buildFromDurationRule(
     unit: "PZA",
     minStock: reorderPoint ?? 2,
     ...(reorderPoint !== undefined ? { reorderPoint } : {}),
-    aliases: uniqueCodes([canonicalSku, material, rule.supplierSku, requestedSku]),
+    aliases: uniqueCodes([canonicalSku, material, rule.erpSku, requestedSku]),
     source: "duration_rule",
   };
 }
@@ -260,7 +260,7 @@ function buildFromCandidate(
   const canonicalSku =
     material ||
     normalizeManualSku(candidate.sku) ||
-    normalizeManualSku(durationRule?.supplierSku) ||
+    normalizeManualSku(durationRule?.erpSku) ||
     requestedSku;
   const category = readText(candidate.category) || inferCategory(name);
   const replacementDays =
@@ -291,7 +291,7 @@ function buildFromCandidate(
       candidate.sku,
       candidate.durationRuleSku,
       candidate.durationRuleSapMaterial,
-      durationRule?.supplierSku,
+      durationRule?.erpSku,
       durationRule?.sapMaterial,
     ]),
     source: "inventory_catalog",
@@ -316,7 +316,7 @@ export function resolveCanonicalEppCatalogItem(
   });
   const lookupCodes = [
     requestedSku,
-    durationRule?.supplierSku,
+    durationRule?.erpSku,
     durationRule?.sapMaterial,
   ];
   const candidate = candidates.find((item) =>

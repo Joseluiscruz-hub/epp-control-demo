@@ -10,11 +10,15 @@
     "local:start": "next start -H 127.0.0.1 -p 3000",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "node --experimental-test-module-mocks --import tsx --test app/api/inventory/_lib.test.ts app/api/inventory/_lib.plants.test.ts lib/plants.test.ts lib/offline-fallback-policy.test.ts lib/app-check-flags.test.ts lib/aria-context.test.ts lib/audit-events.test.ts lib/budget.test.ts lib/chat-request.test.ts lib/dashboard-distribution.test.ts lib/employee-cost-centers.test.ts lib/epp-consumption-rules.test.ts lib/epp-duration-rules.test.ts lib/epp-images.test.ts lib/epp-master-catalog.test.ts lib/epp-reorder-points.test.ts lib/idempotency.test.ts lib/employee-credential-reset.test.ts lib/inventory-document-id.test.ts lib/inventory-import.test.ts lib/kiosk-alert-approvers.test.ts lib/kiosk-request-domain.test.ts lib/kiosk-catalog-public.test.ts lib/kiosk-catalog-view.test.ts lib/kiosk-employee-sync.test.ts lib/kiosk-local-auth-policy.test.ts lib/kiosk-pin-rate-limit.test.ts lib/kiosk-session-server.test.ts lib/notification-sounds.test.ts lib/pin-verify.test.ts lib/portal-employee-response.test.ts lib/public-api-rate-limit.test.ts lib/replacement-logic.test.ts lib/replacement-urgency.test.ts lib/request-ip.test.ts lib/server-auth.test.ts lib/solped-export.test.ts lib/staging-demo-seed.test.ts lib/user-profile.test.ts lib/kiosk-submit-state.test.ts",
+    "test": "node --experimental-test-module-mocks --import tsx --test app/api/inventory/_lib.test.ts app/api/inventory/_lib.plants.test.ts lib/plants.test.ts lib/offline-fallback-policy.test.ts lib/app-check-flags.test.ts lib/aria-context.test.ts lib/aria-judges.test.ts lib/aria-prompt.test.ts lib/aria-rate-limit.test.ts lib/aria-observability.test.ts lib/audit-events.test.ts lib/budget.test.ts lib/business-rules.test.ts lib/chat-request.test.ts lib/dashboard-distribution.test.ts lib/employee-cost-centers.test.ts lib/epp-consumption-rules.test.ts lib/epp-duration-rules.test.ts lib/epp-images.test.ts lib/epp-master-catalog.test.ts lib/epp-reorder-points.test.ts lib/idempotency.test.ts lib/employee-credential-reset.test.ts lib/inventory-document-id.test.ts lib/inventory-import.test.ts lib/kiosk-alert-approvers.test.ts lib/kiosk-request-domain.test.ts lib/kiosk-catalog-public.test.ts lib/kiosk-catalog-view.test.ts lib/kiosk-employee-sync.test.ts lib/kiosk-local-auth-policy.test.ts lib/kiosk-pin-rate-limit.test.ts lib/kiosk-session-server.test.ts lib/notification-sounds.test.ts lib/pin-verify.test.ts lib/portal-employee-response.test.ts lib/public-api-rate-limit.test.ts lib/replacement-logic.test.ts lib/replacement-urgency.test.ts lib/request-ip.test.ts lib/server-auth.test.ts lib/solped-export.test.ts lib/staging-demo-seed.test.ts lib/user-profile.test.ts lib/kiosk-submit-state.test.ts",
     "test:firestore-rules:unit": "node --import tsx --test tests/firestore.rules.test.ts tests/idempotency.emulator.test.ts",
     "test:firestore-rules": "firebase emulators:exec --only firestore --project demo-control-epp-rules --config firebase.test.json \"npm run test:firestore-rules:unit\"",
     "seed:staging:demo": "tsx scripts/seed-staging-demo.ts",
-    "clean": "next clean"
+    "clean": "next clean",
+    "eval:aria": "tsx evals/run.ts",
+    "eval:aria:build": "tsx evals/build-cases.ts",
+    "report:aria": "tsx scripts/aria-weekly-report.ts",
+    "seed:business-rules": "tsx scripts/seed-business-rules.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",

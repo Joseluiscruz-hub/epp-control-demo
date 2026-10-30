@@ -34,7 +34,7 @@ describe("manual EPP master catalog", () => {
     });
   });
 
-  it("maps a supplier alias to one stable SAP SKU", () => {
+  it("maps a ERP alias to one stable SAP SKU", () => {
     const item = resolveCanonicalEppCatalogItem("2-kpm-0");
     assert.equal(item?.sku, "90149605");
     assert.equal(item?.material, "90149605");

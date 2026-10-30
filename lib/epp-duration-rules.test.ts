@@ -7,26 +7,26 @@ import {
 } from "./epp-duration-rules";
 
 describe("getEppDurationRule", () => {
-  it("resuelve regla por SKU de proveedor", () => {
+  it("resuelve regla por SKU ERP", () => {
     const rule = getEppDurationRule({ sku: "2ZTM8" });
-    assert.equal(rule?.id, "sku-2ztm8");
+    assert.equal(rule?.id, "erp-2ztm8");
     assert.equal(rule?.replacementDays, 30);
   });
 
   it("resuelve regla por material SAP", () => {
     const rule = getEppDurationRule({ material: "90149988" });
-    assert.equal(rule?.id, "sku-2cvh2");
+    assert.equal(rule?.id, "erp-2cvh2");
     assert.equal(rule?.replacementDays, 45);
   });
 
   it("normaliza guiones, espacios y minusculas en codigos", () => {
     const rule = getEppDurationRule({ sku: " 2-ztm8 " });
-    assert.equal(rule?.id, "sku-2ztm8");
+    assert.equal(rule?.id, "erp-2ztm8");
   });
 
   it("busca en codigos alternos", () => {
     const rule = getEppDurationRule({ codes: ["desconocido", "90149553"] });
-    assert.equal(rule?.id, "sku-2lem1");
+    assert.equal(rule?.id, "erp-2lem1");
   });
 
   it("busca en variantes de talla", () => {
@@ -36,12 +36,12 @@ describe("getEppDurationRule", () => {
         G: { material: "90148262" },
       },
     });
-    assert.equal(rule?.id, "sku-2kjm7");
+    assert.equal(rule?.id, "erp-2kjm7");
   });
 
   it("busca codigos dentro de nombre o descripcion", () => {
     const rule = getEppDurationRule({ description: "Reposicion de lentes 2CVH2 transparentes" });
-    assert.equal(rule?.id, "sku-2cvh2");
+    assert.equal(rule?.id, "erp-2cvh2");
   });
 
   it("devuelve undefined si no hay coincidencia", () => {
@@ -62,8 +62,8 @@ describe("resolveEppReplacementDays", () => {
 describe("getEppDurationRulePayload", () => {
   it("devuelve payload corporativo para reglas conocidas", () => {
     assert.deepEqual(getEppDurationRulePayload({ sku: "2ZTM8" }), {
-      durationRuleId: "sku-2ztm8",
-      durationRuleSource: "CATALOGO_SAP",
+      durationRuleId: "erp-2ztm8",
+      durationRuleSource: "PLANT_ERP",
       durationRuleSku: "2ZTM8",
       durationRuleSapMaterial: "90148326",
       requiredQuantity: 1,

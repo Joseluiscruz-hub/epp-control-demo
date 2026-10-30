@@ -20,6 +20,7 @@ import { PPECatalogItem } from '@/lib/kiosk-types';
 import { resolveEppReplacementDays } from '@/lib/epp-duration-rules';
 import { normalizeManualSku, validateManualSku } from '@/lib/epp-master-catalog';
 import { getEppReorderPoint } from '@/lib/epp-reorder-points';
+import { useBusinessRules } from '@/hooks/useBusinessRules';
 import { normalizePlantId, plantLabel } from '@/lib/plants';
 import { usePlantStore } from '@/store/usePlantStore';
 import { newIdempotencyKey } from '@/lib/idempotency';
@@ -201,6 +202,7 @@ class ApiRequestError extends Error {
 /* ── Hook ──────────────────────────────────────── */
 
 export function useInventoryData() {
+  useBusinessRules();
   const [items, setItems] = useState<PpeItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import {
   Bot, X, Send, Loader2, Minimize2, Maximize2,
   Sparkles, RefreshCw, TrendingUp, AlertTriangle,
-  ShoppingCart, BarChart3, ChevronRight
+  ShoppingCart, BarChart3, ChevronRight, ThumbsUp, ThumbsDown
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'motion/react';
@@ -20,6 +20,8 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  queryId?: string;
+  feedback?: 'up' | 'down';
 }
 
 function buildRequestHistory(messages: Message[]) {
@@ -155,7 +157,7 @@ export function AiChatPanel() {
           history: buildRequestHistory(messages),
         }),
       });
-      const data = await res.json() as { text?: string; error?: string };
+      const data = await res.json() as { text?: string; error?: string; meta?: { queryId?: string } };
       const botMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
@@ -163,6 +165,7 @@ export function AiChatPanel() {
           ? data.text || 'ARIA no generó una respuesta útil.'
           : data.error || 'No se pudo procesar la consulta.',
         timestamp: new Date(),
+        queryId: res.ok ? data.meta?.queryId : undefined,
       };
       setMessages(prev => [...prev, botMsg]);
     } catch (error) {
@@ -184,6 +187,21 @@ export function AiChatPanel() {
       setLoading(false);
     }
   }, [activePlantId, loading, messages]);
+
+  const sendFeedback = useCallback(async (messageId: string, queryId: string, accepted: boolean) => {
+    setMessages(prev => prev.map(m => m.id === messageId ? { ...m, feedback: accepted ? 'up' : 'down' } : m));
+    try {
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) return;
+      await fetch('/api/chat/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ queryId, accepted }),
+      });
+    } catch {
+      // El feedback es opcional; no interrumpe la conversacion.
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -284,6 +302,29 @@ export function AiChatPanel() {
                         {msg.role === 'assistant' ? (
                           <div className="prose prose-sm max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-strong:text-gray-900 prose-ul:text-gray-700 prose-li:marker:text-red-500">
                             <ReactMarkdown>{msg.content}</ReactMarkdown>
+                            {msg.queryId && (
+                              <div className="not-prose mt-2 flex items-center gap-1 text-[10px] text-slate-400">
+                                <span className="mr-1">¿Te sirvió?</span>
+                                <button
+                                  type="button"
+                                  aria-label="Respuesta útil"
+                                  disabled={Boolean(msg.feedback)}
+                                  onClick={() => sendFeedback(msg.id, msg.queryId!, true)}
+                                  className={`rounded p-1 hover:bg-slate-100 ${msg.feedback === 'up' ? 'text-emerald-600' : ''}`}
+                                >
+                                  <ThumbsUp className="h-3 w-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  aria-label="Respuesta no útil"
+                                  disabled={Boolean(msg.feedback)}
+                                  onClick={() => sendFeedback(msg.id, msg.queryId!, false)}
+                                  className={`rounded p-1 hover:bg-slate-100 ${msg.feedback === 'down' ? 'text-red-600' : ''}`}
+                                >
+                                  <ThumbsDown className="h-3 w-3" />
+                                </button>
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <p>{msg.content}</p>

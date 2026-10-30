@@ -4,7 +4,7 @@ Plataforma web para controlar la **entrega, vida útil y reposición de Equipo d
 
 > **Espejo sanitizado.** Este repositorio es una copia de demostración, con historial nuevo, del sistema que operó en una planta de manufactura de bebidas en México. No contiene datos reales de colaboradores, credenciales, códigos internos de la empresa ni nombres de la empresa o de sus plantas. Las plantas se llaman `norte` y `sur`, y los números de material SAP son ficticios (prefijo `90…`).
 
-**Piloto:** 2 meses de operación con **543 usuarios** registrados y **sin incidentes críticos**.
+**Piloto:** 2 meses de operación en una planta de manufactura: **543 usuarios** registrados, **494 entregas** registradas, **0 diferencias** contra el inventario del ERP (SAP) y **sin incidentes críticos**.
 
 ## Qué hace
 
@@ -58,7 +58,9 @@ npm run build
 npm run test:firestore-rules   # reglas de Firestore con emulador (requiere firebase-tools)
 ```
 
-Al crear este espejo, `npm test` ejecutó **258 pruebas unitarias, todas en verde**, y `npm run typecheck` y `npm run build` pasaron.
+`npm test` ejecuta **275 pruebas unitarias, todas en verde**.
+
+**Evaluación de ARIA:** 48 casos en `evals/` con jueces deterministas (`npm run eval:aria`). Offline 48/48; corrida live con `gemini-2.5-flash` (prompt 2026-10-30.1): **36/48 (75.0 %)**, 100 % sin identificar personas. Ver [`evals/results/LATEST-live.md`](evals/results/LATEST-live.md) y el caso de estudio en [`docs/CASE_STUDY.md`](docs/CASE_STUDY.md). Reglas de vida útil y reorden versionadas en Firestore ([`docs/BUSINESS_RULES.md`](docs/BUSINESS_RULES.md)), rate limit y observabilidad de ARIA, y modelo de amenaza en [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md).
 
 ## Notas de anonimización
 

@@ -13,6 +13,7 @@ import {
 import { isPackageUnit, resolveStockFromPackageRule } from "@/lib/epp-package-rules";
 import { getEppReorderPoint } from "@/lib/epp-reorder-points";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { loadBusinessRules } from "@/lib/business-rules-server";
 import { buildPublicKioskCatalogPayload } from "@/lib/kiosk-catalog-public";
 import { AuthHttpError, requireAdminUser } from "@/lib/server-auth";
 import {
@@ -127,6 +128,7 @@ function parseOptionalNonNegativeNumber(value: unknown) {
 
 export async function GET(req: NextRequest) {
   try {
+    await loadBusinessRules(getAdminDb());
     const adminUser = await requireAdminUser(req);
     const requestedPlant = req.nextUrl.searchParams.get("plant");
     const lookupSku = req.nextUrl.searchParams.get("lookupSku");
@@ -218,6 +220,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    await loadBusinessRules(getAdminDb());
     const adminUser = await requireAdminUser(req);
     const body = await req.json();
     const requestedSku = normalizeManualSku(body?.sku);

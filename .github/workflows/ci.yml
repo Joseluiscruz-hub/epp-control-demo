@@ -51,6 +51,9 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: ARIA offline eval (judges + pipeline)
+        run: npm run eval:aria -- --mode=offline --strict
+
       - name: Firestore rules integration tests
         run: npm run test:firestore-rules
 

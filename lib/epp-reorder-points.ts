@@ -70,6 +70,17 @@ export const EPP_REORDER_POINTS: Record<string, number> = {
   "90005583": 20,
 };
 
+/** Active reorder points; replaced at runtime by the Firestore version. */
+let activeReorderPoints: Record<string, number> = EPP_REORDER_POINTS;
+
+export function setActiveEppReorderPoints(points: Record<string, number> | null) {
+  activeReorderPoints = points && Object.keys(points).length > 0 ? points : EPP_REORDER_POINTS;
+}
+
+export function getActiveEppReorderPoints() {
+  return activeReorderPoints;
+}
+
 export function normalizeEppMaterialCode(value: unknown) {
   return typeof value === "string"
     ? value.trim().toUpperCase().replace(/[^0-9A-Z]/g, "")
@@ -79,8 +90,8 @@ export function normalizeEppMaterialCode(value: unknown) {
 export function getEppReorderPoint(...codes: unknown[]) {
   for (const code of codes) {
     const normalized = normalizeEppMaterialCode(code);
-    if (normalized && Object.prototype.hasOwnProperty.call(EPP_REORDER_POINTS, normalized)) {
-      return EPP_REORDER_POINTS[normalized];
+    if (normalized && Object.prototype.hasOwnProperty.call(activeReorderPoints, normalized)) {
+      return activeReorderPoints[normalized];
     }
   }
   return undefined;

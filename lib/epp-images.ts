@@ -173,7 +173,7 @@ function identifierCandidates(item: EppImageItem, selectedSize?: string) {
     ...selectedVariantCodes,
     item.sku,
     item.material,
-    durationRule?.supplierSku,
+    durationRule?.erpSku,
     durationRule?.sapMaterial,
     item.id,
     item.docId,

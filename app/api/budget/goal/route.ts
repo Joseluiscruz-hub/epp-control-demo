@@ -62,32 +62,32 @@ export async function PUT(req: NextRequest) {
     const db = getAdminDb();
     const goalRef = db.collection("budget_goals").doc(goalId);
     const auditRef = db.collection("audit_events").doc();
-    const previousSnap = await goalRef.get();
-    const previous = previousSnap.exists ? previousSnap.data() : null;
-
-    const payload = {
-      ...goal,
-      monthlyLimits: goal.monthlyLimits ?? FieldValue.delete(),
-      updatedAt: FieldValue.serverTimestamp(),
-      updatedBy: adminUser.uid,
-      ...(!previousSnap.exists ? {
-        createdAt: FieldValue.serverTimestamp(),
-        createdBy: adminUser.uid,
-      } : {}),
-    };
-
-    const batch = db.batch();
-    batch.set(goalRef, payload, { merge: true });
-    batch.set(auditRef, buildAuditEvent({
-      type: previousSnap.exists ? "budget.goal.update" : "budget.goal.create",
-      actorUid: adminUser.uid,
-      actorEmail: adminUser.email,
-      targetCollection: "budget_goals",
-      targetId: goalId,
-      before: previous,
-      after: goal,
-    }, req));
-    await batch.commit();
+    // Read-modify-write inside one Admin SDK transaction so the audited
+    // "before" state cannot go stale under concurrent edits.
+    await db.runTransaction(async (transaction) => {
+      const previousSnap = await transaction.get(goalRef);
+      const previous = previousSnap.exists ? previousSnap.data() : null;
+      const payload = {
+        ...goal,
+        monthlyLimits: goal.monthlyLimits ?? FieldValue.delete(),
+        updatedAt: FieldValue.serverTimestamp(),
+        updatedBy: adminUser.uid,
+        ...(!previousSnap.exists ? {
+          createdAt: FieldValue.serverTimestamp(),
+          createdBy: adminUser.uid,
+        } : {}),
+      };
+      transaction.set(goalRef, payload, { merge: true });
+      transaction.set(auditRef, buildAuditEvent({
+        type: previousSnap.exists ? "budget.goal.update" : "budget.goal.create",
+        actorUid: adminUser.uid,
+        actorEmail: adminUser.email,
+        targetCollection: "budget_goals",
+        targetId: goalId,
+        before: previous,
+        after: goal,
+      }, req));
+    });
 
     return Response.json({ ok: true, goalId });
   } catch (error) {

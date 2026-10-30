@@ -83,28 +83,29 @@ export async function POST(req: NextRequest) {
       const migratedHash = storedLegacyPin.startsWith("$2")
         ? storedLegacyPin
         : await bcrypt.hash(pin, 12);
-      await Promise.all([
-        secretRef.set({
+      // Atomic: the legacy PIN is only removed if the hashed secret is written.
+      const migrationBatch = db.batch();
+      migrationBatch.set(secretRef, {
           pinHash: migratedHash,
           pinVersion: 2,
           legacyPinMigratedAt: FieldValue.serverTimestamp(),
           updatedAt: FieldValue.serverTimestamp(),
           ...(secretSnapshot.exists ? {} : { createdAt: FieldValue.serverTimestamp() }),
-        }, { merge: true }),
-        employeeRef.update({
+        }, { merge: true });
+      migrationBatch.update(employeeRef, {
           pin: FieldValue.delete(),
           pinVersion: FieldValue.delete(),
           lastPinChangeAt: FieldValue.delete(),
           legacyPinMigratedAt: FieldValue.delete(),
           updatedAt: FieldValue.serverTimestamp(),
-        }),
-        db.collection("audit_events").add(buildAuditEvent({
+        });
+      migrationBatch.set(db.collection("audit_events").doc(), buildAuditEvent({
           type: "kiosk.pin.legacy_migrated",
           targetCollection: "kiosk_employee_secrets",
           targetId: employeeId,
           metadata: { source: "kiosk", pinVersion: 2 },
-        }, req)),
-      ]);
+        }, req));
+      await migrationBatch.commit();
     }
 
     const employeeName = typeof employee.name === "string" ? employee.name.trim() : "";

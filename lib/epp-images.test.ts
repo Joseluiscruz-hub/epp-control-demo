@@ -15,7 +15,7 @@ describe("resolveEppImageUrl", () => {
     );
   });
 
-  it("resuelve el codigo de proveedor aunque el inventario venga con material SAP", () => {
+  it("resuelve el codigo ERP aunque el inventario venga con material SAP", () => {
     assert.equal(
       resolveEppImageUrl({
         id: "epp-guante-nailon",

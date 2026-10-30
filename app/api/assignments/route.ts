@@ -4,6 +4,7 @@ import { addDays } from "date-fns";
 import { buildInventoryMovement, readNumber, readStock, readText } from "@/app/api/inventory/_lib";
 import { buildAuditEvent } from "@/lib/audit-events";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { loadBusinessRules } from "@/lib/business-rules-server";
 import { buildPublicKioskCatalogPayload } from "@/lib/kiosk-catalog-public";
 import { InvalidPlantError, resolveRecordPlantId } from "@/lib/plants";
 import { AuthHttpError, canAdminUsePlant, requireAdminUser } from "@/lib/server-auth";
@@ -34,6 +35,7 @@ function getSizes(data: FirebaseFirestore.DocumentData) {
 
 export async function POST(req: NextRequest) {
   try {
+    await loadBusinessRules(getAdminDb());
     const adminUser = await requireAdminUser(req);
     const body = await req.json();
     const employeeId = readText(body?.employeeId);

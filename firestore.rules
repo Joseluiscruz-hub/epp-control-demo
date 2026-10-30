@@ -128,6 +128,27 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ── ARIA: bitacora de consultas y limites (solo servidor Admin SDK) ─────
+    match /aria_queries/{queryId} {
+      allow read: if request.auth != null && isGlobalAdmin();
+      allow create, update, delete: if false;
+    }
+
+    match /aria_rate_limits/{limitId} {
+      allow read, write: if false;
+    }
+
+    // ── Reglas de negocio versionadas (escritura solo via /api/admin/business-rules) ──
+    match /business_rules/{docId} {
+      allow read: if request.auth != null && isAdmin();
+      allow create, update, delete: if false;
+    }
+
+    match /business_rules_versions/{versionId} {
+      allow read: if request.auth != null && isAdmin();
+      allow create, update, delete: if false;
+    }
+
     // ── Funciones helper ───────────────────────────────────────────────────
 
     function isBootstrapAdmin() {

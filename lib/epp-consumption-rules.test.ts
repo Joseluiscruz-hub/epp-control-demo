@@ -67,14 +67,14 @@ describe("EPP consumption rules", () => {
     assert.equal(resolveEppConsumption({ material: "90149552", issuedQuantity: 3 }).quantity, 0.24);
   });
 
-  test("matches known supplier aliases without using material names", () => {
+  test("matches known ERP aliases without using material names", () => {
     assert.equal(findEppConsumptionRule({ sku: "3ppm1" })?.sapMaterial, "90149611");
     assert.equal(findEppConsumptionRule({ sku: "2-LEM-0" })?.sapMaterial, "90149552");
     assert.equal(findEppConsumptionRule({ sku: "62xj76" })?.sapMaterial, "90008560");
     assert.equal(findEppConsumptionRule({ sku: "62-XJ-77" })?.sapMaterial, "90008561");
   });
 
-  test("matches the supplier aliases added for Tyvek coveralls", () => {
+  test("matches the ERP aliases added for Tyvek coveralls", () => {
     assert.equal(findEppConsumptionRule({ sku: "2kpm0" })?.sapMaterial, "90149605");
     assert.equal(findEppConsumptionRule({ sku: "2-KPM-2" })?.sapMaterial, "90149607");
     assert.equal(findEppConsumptionRule({ sku: "2 KPM 3" })?.sapMaterial, "90149608");
