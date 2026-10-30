@@ -1,5 +1,7 @@
 # Control de EPP · demo sanitizada
 
+![ARIA live eval](https://img.shields.io/badge/ARIA%20live%20eval-36%2F48%20(75%25)-brightgreen) ![Tests](https://img.shields.io/badge/tests-275%20passing-brightgreen) ![License: MIT](https://img.shields.io/badge/license-MIT-blue)
+
 Plataforma web para controlar la **entrega, vida útil y reposición de Equipo de Protección Personal (EPP)** en planta, con kiosko de autoservicio, portal del colaborador, inventario multi-planta y un asistente de análisis con IA (ARIA).
 
 > **Espejo sanitizado.** Este repositorio es una copia de demostración, con historial nuevo, del sistema que operó en una planta de manufactura de bebidas en México. No contiene datos reales de colaboradores, credenciales, códigos internos de la empresa ni nombres de la empresa o de sus plantas. Las plantas se llaman `norte` y `sur`, y los números de material SAP son ficticios (prefijo `90…`).
