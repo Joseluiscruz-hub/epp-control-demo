@@ -72,4 +72,4 @@ npm run test:firestore-rules   # reglas de Firestore con emulador (requiere fire
 
 ## Licencia
 
-Ver `LICENSE`.
+MIT — ver [`LICENSE`](LICENSE).
